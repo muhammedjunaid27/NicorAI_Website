@@ -11,18 +11,26 @@ const N8N_WEBHOOK_URL = 'https://n8n.srv810314.hstgr.cloud/webhook-test/chat';  
 app.post('/chat', async (req, res) => {
     console.log('Incoming request:', req.body);
 
+    // ✅ 1. Basic Validation
+    const { message } = req.body;
+    if (!message || message.trim() === '') {
+        return res.status(400).json({
+            error: "The 'message' field is required."
+        });
+    }
+
     try {
-        // Forward to n8n webhook
+        // ✅ 2. Forward to n8n webhook
         const n8nResponse = await axios.post(N8N_WEBHOOK_URL, req.body);
 
         console.log('Response from n8n:', n8nResponse.data);
 
-        // Transform n8n response into the 4.3.1 format
+        // ✅ 3. Safely transform the n8n response
         const transformedResponse = {
-            responseId: 'generated-id-123',  // You can generate a real unique ID here
-            responseType: 'text',            // Assuming it's text; adjust if you add views later
+            responseId: 'generated-id-123',
+            responseType: 'text',
             content: {
-                text: n8nResponse.data.finalMessage
+                text: n8nResponse.data.finalMessage || 'No response text provided.'
             },
             timestamp: new Date().toISOString()
         };
