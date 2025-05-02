@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const N8N_WEBHOOK_URL = 'https://n8n.srv810314.hstgr.cloud/webhook/chat';  // Replace with real
+const N8N_WEBHOOK_URL = 'https://n8n.srv810314.hstgr.cloud/webhook-test/chat';  // Replace with real
 
 app.post('/chat', async (req, res) => {
     console.log('Incoming request:', req.body);

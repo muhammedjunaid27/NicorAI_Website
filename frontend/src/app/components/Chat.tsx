@@ -70,7 +70,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent }) => {
         }
       }
     } catch (error) {
-      setError('Failed to get a response. Please try again.');
+      setError('Failed to connect to the server. The API Gateway might be offline or experiencing issues. Please try again later.');
       console.error('Error sending message:', error);
     } finally {
       setIsLoading(false);
