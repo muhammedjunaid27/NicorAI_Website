@@ -1,22 +1,34 @@
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');  // Install axios if you haven't: npm install axios
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const N8N_WEBHOOK_URL = 'https://n8n.srv810314.hstgr.cloud/webhook/chat';  // Replace with real URL
+const N8N_WEBHOOK_URL = 'https://n8n.srv810314.hstgr.cloud/webhook/chat';  // Replace with real
 
 app.post('/chat', async (req, res) => {
     console.log('Incoming request:', req.body);
 
     try {
         // Forward to n8n webhook
-        const response = await axios.post(N8N_WEBHOOK_URL, req.body);
+        const n8nResponse = await axios.post(N8N_WEBHOOK_URL, req.body);
 
-        // Send n8n's response back to Frontend
-        res.json(response.data);
+        console.log('Response from n8n:', n8nResponse.data);
+
+        // Transform n8n response into the 4.3.1 format
+        const transformedResponse = {
+            responseId: 'generated-id-123',  // You can generate a real unique ID here
+            responseType: 'text',            // Assuming it's text; adjust if you add views later
+            content: {
+                text: n8nResponse.data.finalMessage
+            },
+            timestamp: new Date().toISOString()
+        };
+
+        res.json(transformedResponse);
+
     } catch (error) {
         console.error('Error forwarding to n8n:', error.message);
         res.status(500).json({ error: 'Failed to process request.' });
