@@ -1,35 +1,64 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const { createClient } = require('redis');
 
-dotenv.config();
-
 const app = express();
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 4000;
+const REDIS_URL = process.env.REDIS_URL;
 
-// Redis Client Setup
+// Redis client setup
 const redisClient = createClient({
-    url: process.env.REDIS_URL
+    url: REDIS_URL
 });
 
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
+redisClient.on('error', (err) => {
+    console.error('❌ Redis Client Error:', err.message);
+});
 
+// Connect to Redis
 (async () => {
-    await redisClient.connect();
-    console.log('✅ Redis connected!');
+    try {
+        await redisClient.connect();
+        console.log('✅ Redis connected!');
+    } catch (err) {
+        console.error('❌ Failed to connect to Redis:', err.message);
+    }
 })();
 
-// Import routes
-const chatRoutes = require('./routes/chat');
-app.use('/chat', (req, res, next) => {
-    req.redisClient = redisClient;  // pass redis client to routes
-    next();
-}, chatRoutes);
+// Middleware
+app.use(cors());
+app.use(express.json());  // Body parser for JSON
 
-// Start Server
-const PORT = process.env.PORT || 4000;
+// ✅ Day 2 Task: /chat POST endpoint
+app.post('/chat', async (req, res) => {
+    console.log('➡️ Incoming request body:', req.body);
+
+    const { userId, sessionId, message, timestamp } = req.body;
+
+    // Basic request validation (FR-AG-04)
+    if (!message) {
+        return res.status(400).json({
+            error: 'Missing required field: message'
+        });
+    }
+
+    // ✅ Mocked response (FR-AG-01)
+    const response = {
+        responseId: '1',  // Mock ID
+        responseType: 'text',
+        content: {
+            text: 'Mock API response'
+        },
+        timestamp: new Date().toISOString()
+    };
+
+    console.log('⬅️ Sending mock response:', response);
+    return res.json(response);
+});
+
+// Start the server
 app.listen(PORT, () => {
     console.log(`✅ API Gateway running on port ${PORT}`);
 });
