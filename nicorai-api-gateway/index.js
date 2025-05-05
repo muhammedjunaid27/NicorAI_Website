@@ -30,7 +30,6 @@ redisClient.on('error', (err) => {
 app.use(cors());
 app.use(express.json());
 
-// ✅ Day 3 Task: /chat with n8n call
 app.post('/chat', async (req, res) => {
     console.log('➡️ Incoming request body:', req.body);
 
@@ -44,13 +43,24 @@ app.post('/chat', async (req, res) => {
     }
 
     try {
+        const cacheKey = `chat_cache:${message.trim().toLowerCase()}`;
+        console.log(`🔍 Checking Redis cache for key: ${cacheKey}`);
+
+        // 1️⃣ Try to get from cache
+        const cachedData = await redisClient.get(cacheKey);
+        if (cachedData) {
+            console.log('✅ Cache hit! Returning cached response.');
+            return res.json(JSON.parse(cachedData));
+        }
+        console.log('⚠️ Cache miss. Proceeding to call n8n.');
+
         // Prepare request for n8n (contract 4.3.2)
         const n8nRequestBody = {
-            requestId: `${Date.now()}`,  // Mocked request ID
+            requestId: `${Date.now()}`,
             userId,
             sessionId,
             message,
-            conversationContext: [],  // Empty for now
+            conversationContext: [],
             timestamp: timestamp || new Date().toISOString()
         };
 
@@ -62,50 +72,44 @@ app.post('/chat', async (req, res) => {
         console.log('⬅️ Received from n8n:', n8nResponse.data);
 
         // Transform n8n response (contract 4.3.2) to frontend (4.3.1)
-        console.log('⬅️ Received from n8n:', n8nResponse.data);
+        // Transform n8n response (contract 4.3.2) to frontend (4.3.1)
+const transformedResponse = {
+    responseId: `${Date.now()}`,  // Generate a mock responseId (you can change this logic if needed)
+    responseType: 'text',         // You can hardcode 'text' if that's the expected type
+    content: {
+        text: n8nResponse.data.answer
+    },
+    timestamp: new Date().toISOString()
+};
 
-        // NEW: Transform n8n response properly
-        const firstFAQ = (n8nResponse.data.data && n8nResponse.data.data.length > 0)
-            ? n8nResponse.data.data[0]
-            : null;
-        
-        const transformedResponse = {
-            responseId: firstFAQ ? String(firstFAQ.id) : "0",
-            responseType: "text",   // We're returning text type
-            content: {
-                text: firstFAQ
-                    ? firstFAQ.answer
-                    : "Sorry, no answer found."
-            },
-            timestamp: new Date().toISOString()
-        };
-        
+
         console.log('⬅️ Sending to frontend:', transformedResponse);
-        
+
+        // 2️⃣ Store in Redis (1 hour TTL)
+        await redisClient.set(cacheKey, JSON.stringify(transformedResponse), {
+            EX: 3600 // 1 hour
+        });
+        console.log('✅ Stored response in Redis with 1-hour TTL.');
+
         return res.json(transformedResponse);
-        
-        
 
     } catch (err) {
         console.error('❌ Error calling n8n or transforming response:');
-    
+
         if (err.response) {
-            // The server responded with a status code out of 2xx
             console.error('🔴 n8n Response Error:', err.response.status, err.response.data);
         } else if (err.request) {
-            // The request was made but no response was received
             console.error('🟠 No response from n8n:', err.request);
         } else {
-            // Something else went wrong
             console.error('⚠️ General Error:', err.message);
         }
-    
+
         return res.status(500).json({
             error: 'Something went wrong while processing your request.'
         });
     }
-    
 });
+
 
 app.listen(PORT, () => {
     console.log(`✅ API Gateway running on port ${PORT}`);
