@@ -43,3 +43,13 @@ body {
 .font-pixelify {
   font-size: calc(1em * var(--pixelify-font-size-adjustment));
 }
+
+/* Hide scrollbars while maintaining scrolling functionality */
+textarea {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+textarea::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

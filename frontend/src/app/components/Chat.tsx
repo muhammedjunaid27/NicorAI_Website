@@ -90,6 +90,17 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     // Notify parent that a message was sent
     onMessageSent?.(false);
     
+    // Create a user message object to display immediately
+    const userMessage: ChatMessage = {
+      id: `msg-${Date.now()}-user`,
+      content: content,
+      sender: 'user',
+      timestamp: new Date()
+    };
+    
+    // Update UI immediately with the user message
+    setMessages(prevMessages => [...prevMessages, userMessage]);
+    
     try {
       // Use the API service to get a response
       const aiResponse = await apiService.sendMessage(content);
@@ -175,7 +186,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message here..."
-              className="w-full p-4 pr-12 rounded-lg border border-gray-300 focus:outline-none focus:border-[#708dff] focus:border-2 focus:ring-2 focus:ring-blue-100 focus:bg-blue-50 resize-none h-24 placeholder-gray-500 text-gray-900"
+              className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-24 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -185,9 +196,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             />
             <button
               type="submit"
-              className="absolute right-3 bottom-3 p-2 text-blue-600 hover:text-blue-800"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
               </svg>
             </button>
@@ -201,7 +212,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               <button
                 key={index}
                 onClick={() => handleFaqClick(question)}
-                className="p-3 text-left text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="p-3 text-left text-sm rounded-xl border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
               >
                 {question}
               </button>
@@ -213,10 +224,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
   );
 
   const renderChatView = () => (
-    <div className="flex flex-col h-full">
-      {/* Chat Header with Close button */}
-      <div className="bg-white border-b border-gray-200 p-3 flex justify-between items-center sticky top-0 z-10">
-        <h2 className="font-medium text-gray-800">Current Chat</h2>
+    <div className="flex flex-col h-full relative">
+      {/* Header section with close button */}
+      <div className="p-3 flex justify-end border-b border-gray-100">
         <button 
           onClick={() => {
             // Notify parent component to hide the chat view
@@ -225,13 +235,12 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               onMessageSent(true);
             }
           }}
-          className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors flex items-center"
+          className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
           title="Close chat"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
             <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
           </svg>
-          Close
         </button>
       </div>
       
@@ -242,28 +251,47 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             key={message.id} 
             className={`mb-4 ${message.sender === 'user' ? 'flex justify-end' : 'flex justify-start'}`}
           >
+            {message.sender !== 'user' && (
+              <div className="w-8 h-8 rounded-full bg-gray-200 mr-2 flex-shrink-0 overflow-hidden">
+                <img src="/images/nicor-logo-black-removebg_without_text.png" alt="NicorAI" className="w-full h-full object-cover" onError={(e) => {
+                  e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23888"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
+                }} />
+              </div>
+            )}
             <div 
-              className={`max-w-[75%] rounded-lg p-4 ${
+              className={`max-w-[75%] p-3 ${
                 message.sender === 'user' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-800'
+                  ? 'bg-blue-600 text-white rounded-tl-xl rounded-br-xl rounded-bl-xl' 
+                  : 'bg-blue-200 text-black rounded-tr-xl rounded-bl-xl rounded-br-xl'
               }`}
             >
               <p className="whitespace-pre-wrap">{message.content}</p>
               <div 
-                className={`text-xs mt-1 ${
-                  message.sender === 'user' ? 'text-blue-100' : 'text-gray-600'
+                className={`text-xs mt-1 text-right ${
+                  message.sender === 'user' ? 'text-blue-200' : 'text-gray-500'
                 }`}
               >
                 {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
             </div>
+            {message.sender === 'user' && (
+              <div className="w-8 h-8 rounded-full bg-blue-600 ml-2 flex-shrink-0 overflow-hidden flex items-center justify-center text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              </div>
+            )}
           </div>
         ))}
         
         {isLoading && (
           <div className="flex justify-start mb-4">
-            <div className="bg-gray-100 rounded-lg p-4 max-w-[75%]">
+            <div className="w-8 h-8 rounded-full bg-gray-200 mr-2 flex-shrink-0 overflow-hidden">
+              <img src="/images/nicor-logo-black-removebg_without_text.png" alt="NicorAI" className="w-full h-full object-cover" onError={(e) => {
+                e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23888"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
+              }} />
+            </div>
+            <div className="bg-gray-100 rounded-tr-xl rounded-tl-xl rounded-br-xl p-3 max-w-[75%]">
               <div className="flex space-x-2 items-center">
                 <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce"></div>
                 <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:0.2s]"></div>
@@ -274,7 +302,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
         )}
         
         {error && (
-          <div className="mx-auto p-3 my-2 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+          <div className="mx-auto p-3 my-2 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
             {error}
           </div>
         )}
@@ -291,7 +319,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message here..."
-              className="w-full p-3 pr-12 rounded-lg border border-gray-300 focus:outline-none focus:border-[#708dff] focus:border-2 focus:ring-2 focus:ring-blue-100 focus:bg-blue-50 resize-none h-12 min-h-12 max-h-32 placeholder-gray-500 text-gray-900"
+              className="w-full p-3 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-12 min-h-12 max-h-32 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -302,11 +330,11 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             <button
               type="submit"
               disabled={isLoading}
-              className={`absolute right-3 bottom-3 p-1 ${
-                isLoading ? 'text-gray-400' : 'text-blue-600 hover:text-blue-800'
+              className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
+                isLoading ? 'opacity-50' : ''
               }`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
               </svg>
             </button>

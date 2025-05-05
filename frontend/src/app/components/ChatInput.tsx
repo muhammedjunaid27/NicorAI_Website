@@ -81,7 +81,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Type your message here..."
-          className="w-full p-3 pr-12 rounded-lg border border-gray-300 focus:outline-none focus:border-[#708dff] focus:border-2 focus:ring-2 focus:ring-blue-100 focus:bg-blue-50 resize-none h-12 min-h-12 max-h-32 placeholder-gray-500 text-gray-900"
+          className="w-full p-3 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-12 min-h-12 max-h-32 placeholder-gray-500 text-gray-900"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -92,11 +92,11 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
         <button
           type="submit"
           disabled={isLoading}
-          className={`absolute right-3 bottom-3 p-1 ${
-            isLoading ? 'text-gray-400' : 'text-blue-600 hover:text-blue-800'
+          className={`absolute right-3 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
+            isLoading ? 'opacity-50' : ''
           }`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
           </svg>
         </button>
@@ -104,7 +104,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
       
       {/* Notification popup */}
       {notification.status !== 'none' && (
-        <div className={`absolute bottom-full mb-2 right-0 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 transition-opacity ${
+        <div className={`absolute bottom-full mb-2 right-0 px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 transition-opacity ${
           notification.status === 'sending' ? 'bg-blue-50 text-blue-600' : 
           notification.status === 'success' ? 'bg-green-50 text-green-600' : 
           'bg-red-50 text-red-600'

@@ -21,6 +21,26 @@ export default function Home() {
       setIsInitialView(false);
     }
   }, []);
+  
+  // Listen for chat selection from history
+  useEffect(() => {
+    const handleChatChange = (e: CustomEvent) => {
+      // Make sure the chat becomes visible when a chat is selected from history
+      if (e.detail.messages && e.detail.messages.length > 0) {
+        // Clear any active view when a chat is selected
+        setActiveView(null);
+        setIsChatVisible(true);
+        setIsInitialView(false);
+      }
+    };
+    
+    // Add event listener for chat changed events
+    window.addEventListener('chatChanged', handleChatChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('chatChanged', handleChatChange as EventListener);
+    };
+  }, []);
 
   // Function to handle sending a message in the chat
   // This is now also used to handle closing the chat
