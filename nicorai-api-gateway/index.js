@@ -73,14 +73,13 @@ app.post('/chat', async (req, res) => {
 
         // Transform n8n response (contract 4.3.2) to frontend (4.3.1)
         // Transform n8n response (contract 4.3.2) to frontend (4.3.1)
-const transformedResponse = {
-    responseId: `${Date.now()}`,  // Generate a mock responseId (you can change this logic if needed)
-    responseType: 'text',         // You can hardcode 'text' if that's the expected type
-    content: {
-        text: n8nResponse.data.answer
-    },
-    timestamp: new Date().toISOString()
-};
+        const transformedResponse = {
+            responseId: n8nResponse.data.responseId,
+            responseType: n8nResponse.data.responseType,
+            content: n8nResponse.data.content,  // ✅ correct: whole content block
+            timestamp: n8nResponse.data.timestamp
+        };
+        
 
 
         console.log('⬅️ Sending to frontend:', transformedResponse);
